@@ -16,13 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,14 +41,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ScaleCircleScreen(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val scaleManager = remember { ScaleManager(context) }
-    val scope = rememberCoroutineScope()
+    val viewModel: ScaleViewModel = viewModel()
 
-    val shuffledScales by scaleManager.shuffledScalesFlow.collectAsState(initial = emptyList())
-    val currentIndex by scaleManager.currentIndexFlow.collectAsState(initial = 0)
-    val previousScale by scaleManager.previousScaleFlow.collectAsState(initial = null)
-    val completionCount by scaleManager.completionCountFlow.collectAsState(initial = 0)
+    val shuffledScales by viewModel.shuffledScalesFlow.collectAsState()
+    val currentIndex by viewModel.currentIndexFlow.collectAsState()
+    val previousScale by viewModel.previousScaleFlow.collectAsState()
+    val completionCount by viewModel.completionCountFlow.collectAsState()
 
     // Don't show anything until data is loaded
     if (shuffledScales.isEmpty()) {
@@ -110,9 +107,7 @@ fun ScaleCircleScreen(modifier: Modifier = Modifier) {
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable {
-                    scope.launch {
-                        scaleManager.moveToNextScale(shuffledScales, currentIndex)
-                    }
+                    viewModel.moveToNextScale(shuffledScales, currentIndex)
                 },
             contentAlignment = Alignment.Center
         ) {

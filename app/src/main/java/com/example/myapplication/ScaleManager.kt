@@ -45,6 +45,18 @@ class ScaleManager(private val context: Context) {
         preferences[COMPLETION_COUNT_KEY] ?: 0
     }
 
+    suspend fun initializeShuffleIfNeeded() {
+        context.dataStore.edit { preferences ->
+            val scalesString = preferences[SHUFFLED_SCALES_KEY]
+            if (scalesString.isNullOrEmpty()) {
+                // Initialize with shuffled scales on first launch
+                val shuffled = allScales.shuffled()
+                preferences[SHUFFLED_SCALES_KEY] = shuffled.joinToString(SCALE_SEPARATOR)
+                preferences[CURRENT_INDEX_KEY] = 0
+            }
+        }
+    }
+
     suspend fun moveToNextScale(currentShuffledScales: List<String>, currentIndex: Int) {
         val currentScale = currentShuffledScales[currentIndex]
         val nextIndex = currentIndex + 1
